@@ -20,6 +20,7 @@ import java.io.File;
 public class AdminUser extends Activity {
     EditText Tagline;
     private final String MY_PREFS_NAME ="Prefs";
+    private  final int PICKFILE_RESULT_CODE = 9090;
     Button BtSave,BtBrowse;
 
     @Override
@@ -33,28 +34,29 @@ public class AdminUser extends Activity {
         SharedPreferences prefs = getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE);
         String PrefTagline = prefs.getString("tagline", null);
         if (PrefTagline != null) {
-            Tagline.setText("Tagline");
-        }else{
             Tagline.setText(PrefTagline);
+
+        }else{
+            Tagline.setText("Tagline");
         }
 
         BtBrowse.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
-                File file = new File(Environment.getExternalStorageDirectory()+ "");
-                Intent intent = new Intent(Intent.ACTION_VIEW);
-                intent.setDataAndType(Uri.fromFile(file),"application/vnd.ms-excel");
-                startActivity(intent);
+                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                intent.setType("file/*");
+                startActivityForResult(intent,PICKFILE_RESULT_CODE);
             }
         });
         BtSave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(Tagline.getText().toString().trim().equals("")) {
+                if(!Tagline.getText().toString().trim().equals("")) {
                     SharedPreferences.Editor editor = getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE).edit();
                     editor.putString("tagline", Tagline.getText().toString().trim());
                     editor.commit();
+                    Toast.makeText(getApplicationContext(),"Tagline saved",Toast.LENGTH_LONG).show();
                 }else{
 
                     Toast.makeText(getApplicationContext(),"Tagline can't be empty",Toast.LENGTH_LONG).show();
@@ -62,5 +64,18 @@ public class AdminUser extends Activity {
             }
         });
 
+    }
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+// TODO Auto-generated method stub
+        switch(requestCode){
+            case PICKFILE_RESULT_CODE:
+                if(resultCode==RESULT_OK){
+                    String FilePath = data.getData().getPath();
+                    Toast.makeText(getApplicationContext(),FilePath,Toast.LENGTH_LONG).show();
+                }
+                break;
+
+        }
     }
 }

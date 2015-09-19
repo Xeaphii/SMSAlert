@@ -9,6 +9,7 @@ import android.os.Environment;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import java.io.File;
 
@@ -18,6 +19,8 @@ import java.io.File;
 public class NormalUser extends Activity {
     EditText Tagline;
     private final String MY_PREFS_NAME ="Prefs";
+    private  final int PICKFILE_RESULT_CODE = 9090;
+
     Button BtBrowse;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,19 +31,33 @@ public class NormalUser extends Activity {
         SharedPreferences prefs = getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE);
         String PrefTagline = prefs.getString("tagline", null);
         if (PrefTagline != null) {
-            Tagline.setText("Tagline");
-        }else{
             Tagline.setText(PrefTagline);
+        }else{
+
+            Tagline.setText("Tagline");
         }
         BtBrowse.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                File file = new File(Environment.getExternalStorageDirectory()+ "");
-                Intent intent = new Intent(Intent.ACTION_VIEW);
-                intent.setDataAndType(Uri.fromFile(file),"application/vnd.ms-excel");
-                startActivity(intent);
+
+                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                intent.setType("file/*");
+                startActivityForResult(intent,PICKFILE_RESULT_CODE);
             }
         });
 
+    }
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+// TODO Auto-generated method stub
+        switch(requestCode){
+            case PICKFILE_RESULT_CODE:
+                if(resultCode==RESULT_OK){
+                    String FilePath = data.getData().getPath();
+                    Toast.makeText(getApplicationContext(), FilePath, Toast.LENGTH_LONG).show();
+                }
+                break;
+
+        }
     }
 }
