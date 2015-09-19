@@ -13,6 +13,14 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+
+import jxl.Cell;
+import jxl.Sheet;
+import jxl.Workbook;
+import jxl.read.biff.BiffException;
+
 
 /**
  * Created by Xeaphii on 9/17/2015.
@@ -46,7 +54,7 @@ public class AdminUser extends Activity {
 
                 Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
                 intent.setType("file/*");
-                startActivityForResult(intent,PICKFILE_RESULT_CODE);
+                startActivityForResult(intent, PICKFILE_RESULT_CODE);
             }
         });
         BtSave.setOnClickListener(new View.OnClickListener() {
@@ -72,7 +80,12 @@ public class AdminUser extends Activity {
             case PICKFILE_RESULT_CODE:
                 if(resultCode==RESULT_OK){
                     String FilePath = data.getData().getPath();
-                    Toast.makeText(getApplicationContext(),FilePath,Toast.LENGTH_LONG).show();
+                   // Toast.makeText(getApplicationContext(),FilePath,Toast.LENGTH_LONG).show();
+                    Intent i = new Intent(AdminUser.this,SelectNumberCol.class);
+                    i.putExtra("FilePath",FilePath);
+                    startActivity(i);
+                    finish();
+                //   Toast.makeText(getApplicationContext(),resultSet.toString(),Toast.LENGTH_LONG).show();
                 }
                 break;
 

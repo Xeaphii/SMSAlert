@@ -54,7 +54,11 @@ public class NormalUser extends Activity {
             case PICKFILE_RESULT_CODE:
                 if(resultCode==RESULT_OK){
                     String FilePath = data.getData().getPath();
-                    Toast.makeText(getApplicationContext(), FilePath, Toast.LENGTH_LONG).show();
+                  //  Toast.makeText(getApplicationContext(), FilePath, Toast.LENGTH_LONG).show();
+                    Intent i = new Intent(NormalUser.this,SelectNumberCol.class);
+                    i.putExtra("FilePath",FilePath);
+                    startActivity(i);
+                    finish();
                 }
                 break;
 
