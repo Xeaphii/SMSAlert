@@ -10,6 +10,7 @@
         android:orientation="vertical"
         >
         <TextView
+
             android:layout_width="wrap_content"
             android:textStyle="bold"
             android:layout_height="wrap_content"
@@ -22,6 +23,7 @@
 
 
             <EditText
+                android:id="@+id/et_tagline"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:hint="Tagline"
@@ -33,6 +35,7 @@
 
 
     <Button
+        android:id="@+id/bt_browse"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:paddingLeft="50dp"
