@@ -2,6 +2,7 @@ package xeaphii.com.smsalert;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -35,6 +36,13 @@ public class DesignSms extends Activity {
         AddColumn = (Button) findViewById(R.id.add_col);
 
         ColumnsForExcel = (Spinner) findViewById(R.id.number_col);
+        AddColumn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                MessageBody.setText(MessageBody.getText().toString()+"{"+ColumnsForExcel.getSelectedItem().toString()+"}");
+                MessageBody.setSelection(MessageBody.getText().length());
+            }
+        });
 
         List<String> resultSet = new ArrayList<String>();
         Bundle extras = getIntent().getExtras();
@@ -55,7 +63,7 @@ public class DesignSms extends Activity {
                         for (int i = 0; i < sheet.getColumns(); i++) {
                             if(i != Integer.parseInt(PhoneNumberIndex)) {
                                 Cell cel = sheet.getCell(i, 0);
-                                resultSet.add(cel.getContents() + ":");
+                                resultSet.add(cel.getContents() + "");
                             }
                         }
                         //}

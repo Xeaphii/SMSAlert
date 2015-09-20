@@ -50,7 +50,7 @@ public class SelectNumberCol extends Activity {
                         //if(cell.getContents().equalsIgnoreCase(key)){
                         for (int i = 0; i < sheet.getColumns(); i++) {
                             Cell cel = sheet.getCell(i, 0);
-                            resultSet.add(cel.getContents() + ":");
+                            resultSet.add(cel.getContents() + "");
                         }
                         //}
                         //   continue;
