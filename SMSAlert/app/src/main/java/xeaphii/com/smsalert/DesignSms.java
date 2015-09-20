@@ -46,6 +46,7 @@ public class DesignSms extends Activity {
     String SENT = "SMS_SENT";
     String DELIVERED = "SMS_DELIVERED";
     String Tagline = "";
+    private ProgressDialog dialogSms;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -224,7 +225,9 @@ public class DesignSms extends Activity {
 
 
     private void startSendMessages(){
-
+        dialogSms  = new ProgressDialog(DesignSms.this);
+        dialogSms.setMessage("Sending sms, ");
+        dialogSms.show();
         registerBroadCastReceivers();
 
         mMessageSentCount = 0;
@@ -235,6 +238,9 @@ public class DesignSms extends Activity {
         if(thereAreSmsToSend()){
             sendSMS(numbersList.get(mMessageSentCount), SmsList.get(mMessageSentCount)+" "+Tagline);
         }else{
+            if (dialogSms.isShowing()) {
+                dialogSms.dismiss();
+            }
             Toast.makeText(getBaseContext(), "All SMS have been sent",
                     Toast.LENGTH_SHORT).show();
         }
@@ -277,7 +283,7 @@ public class DesignSms extends Activity {
 
                         mMessageSentParts++;
                         if ( mMessageSentParts == mMessageSentTotalParts ) {
-                            mMessageSentCount++;
+                          //  mMessageSentCount++;
                             sendNextMessage();
                         }
 
