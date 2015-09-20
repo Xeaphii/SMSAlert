@@ -32,6 +32,7 @@
         android:minLines="6"
         android:lines="8"
         android:inputType="textMultiLine"
+        android:hint="Type message"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:layout_weight="1"
