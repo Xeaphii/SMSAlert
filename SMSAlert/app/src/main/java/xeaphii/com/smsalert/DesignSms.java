@@ -1,9 +1,15 @@
 package xeaphii.com.smsalert;
 
 import android.app.Activity;
+import android.app.PendingIntent;
 import android.app.ProgressDialog;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.telephony.gsm.SmsManager;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -30,8 +36,13 @@ public class DesignSms extends Activity {
     Spinner ColumnsForExcel;
     Sheet TempSheet = null;
     String PhoneNumberIndex = "";
+    private int mMessageSentParts;
+    private int mMessageSentTotalParts;
+    private int mMessageSentCount;
     List<String> SmsList;
-
+    List<String> numbersList;
+    String SENT = "SMS_SENT";
+    String DELIVERED = "SMS_DELIVERED";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,6 +52,7 @@ public class DesignSms extends Activity {
         MessageBody = (EditText) findViewById(R.id.sms_body);
         SendMessage = (Button) findViewById(R.id.bt_send);
         AddColumn = (Button) findViewById(R.id.add_col);
+        numbersList= new ArrayList<>();
 
         ColumnsForExcel = (Spinner) findViewById(R.id.number_col);
         AddColumn.setOnClickListener(new View.OnClickListener() {
@@ -78,7 +90,9 @@ public class DesignSms extends Activity {
                                 Cell cel = TempSheet.getCell(i, 0);
                                 resultSet.add(cel.getContents() + "");
                             }
+
                         }
+
                         //}
                         //   continue;
                         // }
@@ -109,7 +123,7 @@ public class DesignSms extends Activity {
 
         @Override
         protected void onPreExecute() {
-            dialog.setMessage("Doing something, please wait.");
+            dialog.setMessage("Preparing sms, ");
             dialog.show();
         }
 
@@ -118,9 +132,10 @@ public class DesignSms extends Activity {
             if (dialog.isShowing()) {
                 dialog.dismiss();
             }
-            for(int i = 0; i < SmsList.size();i++){
-                Toast.makeText(getApplicationContext(),SmsList.get(i),Toast.LENGTH_LONG).show();
-            }
+//            for(int i = 0; i < SmsList.size();i++){
+//                Toast.makeText(getApplicationContext(),SmsList.get(i),Toast.LENGTH_LONG).show();
+//            }
+            startSendMessages();
         }
 
         @Override
@@ -129,10 +144,11 @@ public class DesignSms extends Activity {
                 int count =0;
                 for (int i = 1; i < TempSheet.getRows(); i++) {
 
-                    Cell cell = TempSheet.getCell(0, i);
+                    Cell cell = TempSheet.getCell(Integer.parseInt(PhoneNumberIndex), i);
                     String con = cell.getContents();
                     if (con != null && con.length() != 0) {
                         count++;
+                        numbersList.add(con);
                     }
 
                 }
@@ -160,34 +176,140 @@ public class DesignSms extends Activity {
                         start = SmsBody.indexOf('{') + 1 + currentIndex;
                         end = SmsBody.indexOf('}') + currentIndex;
                         int index = -1;
-                        String columnName = MessageBody.getText().toString().substring(start, end);
-                        for (int i = 0; i < TempSheet.getColumns(); i++) {
-                            if (columnName.equals(TempSheet.getCell(i, 0).getContents())) {
+                        if (SmsBody.indexOf('{') >= 0 && SmsBody.indexOf('}') >= 0) {
+                            String columnName = MessageBody.getText().toString().substring(start, end);
+                            for (int i = 0; i < TempSheet.getColumns(); i++) {
+                                if (columnName.equals(TempSheet.getCell(i, 0).getContents())) {
 //                            Cell cel = TempSheet.getCell(i, 0);
 //                        resultSet.add(cel.getContents() + "");
-                                index = i;
-                                break;
+                                    index = i;
+                                    break;
+                                }
                             }
-                        }
-                        if(index>=0) {
-                            for (int i = 0; i < SmsList.size(); i++) {
+                            if (index >= 0) {
+                                for (int i = 0; i < SmsList.size(); i++) {
 
-                                SmsList.set(i, SmsList.get(i).substring(0, SmsList.get(i).indexOf("{",TempCounter)) + TempSheet.getCell(index, i + 1).getContents() + SmsList.get(i).substring(SmsList.get(i).indexOf("}",TempCounter)  + 1, SmsList.get(i).length()));
+                                    SmsList.set(i, SmsList.get(i).substring(0, SmsList.get(i).indexOf("{", TempCounter)) + TempSheet.getCell(index, i + 1).getContents() + SmsList.get(i).substring(SmsList.get(i).indexOf("}", TempCounter) + 1, SmsList.get(i).length()));
+                                }
+                                //output = SmsBody.indexOf('}');
+                                currentIndex += SmsBody.indexOf('}') + 1;
+                                SmsBody = SmsBody.substring(SmsBody.indexOf('}') + 1, SmsBody.length());
                             }
-                            //output = SmsBody.indexOf('}');
-                            currentIndex += SmsBody.indexOf('}') + 1;
-                            SmsBody = SmsBody.substring(SmsBody.indexOf('}') + 1, SmsBody.length());
+                            TempCounter++;
+                        }else{
+                            break;
                         }
-                        TempCounter++;
                     }
 
                 }
             }else{
-                Toast.makeText(getApplicationContext(),"Sms body can't be empty",Toast.LENGTH_LONG).show();
+                //Toast.makeText(getApplicationContext(),"Sms body can't be empty",Toast.LENGTH_LONG).show();
             }
 
             return null;
         }
 
     }
+
+
+    private void startSendMessages(){
+
+        registerBroadCastReceivers();
+
+        mMessageSentCount = 0;
+        sendSMS(numbersList.get(mMessageSentCount), SmsList.get(mMessageSentCount));
+    }
+
+    private void sendNextMessage(){
+        if(thereAreSmsToSend()){
+            sendSMS(numbersList.get(mMessageSentCount), SmsList.get(mMessageSentCount));
+        }else{
+            Toast.makeText(getBaseContext(), "All SMS have been sent",
+                    Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private boolean thereAreSmsToSend(){
+        return mMessageSentCount < SmsList.size();
+    }
+
+    private void sendSMS(final String phoneNumber, String message) {
+
+
+        SmsManager sms = SmsManager.getDefault();
+        ArrayList<String> parts = sms.divideMessage(message);
+        mMessageSentTotalParts = parts.size();
+
+
+        ArrayList<PendingIntent> deliveryIntents = new ArrayList<PendingIntent>();
+        ArrayList<PendingIntent> sentIntents = new ArrayList<PendingIntent>();
+
+        PendingIntent sentPI = PendingIntent.getBroadcast(this, 0, new Intent(SENT), 0);
+        PendingIntent deliveredPI = PendingIntent.getBroadcast(this, 0, new Intent(DELIVERED), 0);
+
+        for (int j = 0; j < mMessageSentTotalParts; j++) {
+            sentIntents.add(sentPI);
+            deliveryIntents.add(deliveredPI);
+        }
+
+        mMessageSentParts = 0;
+        sms.sendMultipartTextMessage(phoneNumber, null, parts, sentIntents, deliveryIntents);
+    }
+
+    private void registerBroadCastReceivers(){
+
+        registerReceiver(new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context arg0, Intent arg1) {
+                switch (getResultCode()) {
+                    case Activity.RESULT_OK:
+
+                        mMessageSentParts++;
+                        if ( mMessageSentParts == mMessageSentTotalParts ) {
+                            mMessageSentCount++;
+                            sendNextMessage();
+                        }
+
+                        Toast.makeText(getBaseContext(), "SMS sent",
+                                Toast.LENGTH_SHORT).show();
+                        break;
+                    case SmsManager.RESULT_ERROR_GENERIC_FAILURE:
+                        Toast.makeText(getBaseContext(), "Generic failure",
+                                Toast.LENGTH_SHORT).show();
+                        break;
+                    case SmsManager.RESULT_ERROR_NO_SERVICE:
+                        Toast.makeText(getBaseContext(), "No service",
+                                Toast.LENGTH_SHORT).show();
+                        break;
+                    case SmsManager.RESULT_ERROR_NULL_PDU:
+                        Toast.makeText(getBaseContext(), "Null PDU",
+                                Toast.LENGTH_SHORT).show();
+                        break;
+                    case SmsManager.RESULT_ERROR_RADIO_OFF:
+                        Toast.makeText(getBaseContext(), "Radio off",
+                                Toast.LENGTH_SHORT).show();
+                        break;
+                }
+            }
+        }, new IntentFilter(SENT));
+
+        registerReceiver(new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context arg0, Intent arg1) {
+                switch (getResultCode()) {
+
+                    case Activity.RESULT_OK:
+                        Toast.makeText(getBaseContext(), "SMS delivered",
+                                Toast.LENGTH_SHORT).show();
+                        break;
+                    case Activity.RESULT_CANCELED:
+                        Toast.makeText(getBaseContext(), "SMS not delivered",
+                                Toast.LENGTH_SHORT).show();
+                        break;
+                }
+            }
+        }, new IntentFilter(DELIVERED));
+
+    }
+
 }
