@@ -51,54 +51,60 @@ public class DesignSms extends Activity {
         SendMessage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                int count = 0;
-                for (int i = 1; i < TempSheet.getRows(); i++) {
+                if (MessageBody.getText().toString().trim().length() > 0) {
+                    int count = -1;
+                    for (int i = 1; i < TempSheet.getRows(); i++) {
 
-                    Cell cell = TempSheet.getCell(0, i);
-                    String con=cell.getContents();
-                        if(con !=null && con.length()!=0){
+                        Cell cell = TempSheet.getCell(0, i);
+                        String con = cell.getContents();
+                        if (con != null && con.length() != 0) {
                             count++;
                         }
 
-                }
-
-                String SmsBody = MessageBody.getText().toString().trim();
-                SmsList = new ArrayList<>(Collections.nCopies(count, SmsBody));
-
-                int currentIndex =0 ;
-
-
-                 for (int j = 0; j < TempSheet.getRows(); j++) {
-                Cell cell = TempSheet.getCell(0, 0);
-                //if(cell.getContents().equalsIgnoreCase(key)){
-                for (int i = 0; i < TempSheet.getColumns(); i++) {
-                    if(i != Integer.parseInt(PhoneNumberIndex)) {
-                        Cell cel = TempSheet.getCell(i, 0);
-//                        resultSet.add(cel.getContents() + "");
-
                     }
-                }
-                }
-                int start = 0 , end = 0;
-                while(currentIndex < MessageBody.getText().toString().trim().length()) {
-                    start = SmsBody.indexOf('{') + 1+currentIndex;
-                    end=SmsBody.indexOf('}')+currentIndex;
-                    int index = 0;
-                    String columnName = MessageBody.getText().toString().substring(start,end);
-                    for(int i =0 ; i < TempSheet.getColumns();i++){
-                        if(columnName.equals(TempSheet.getCell(i, 0).getContents())) {
+                    if (count >= 0) {
+
+                        String SmsBody = MessageBody.getText().toString().trim();
+                        SmsList = new ArrayList<>(Collections.nCopies(count, SmsBody));
+
+                        int currentIndex = 0;
+
+
+//                 for (int j = 0; j < TempSheet.getRows(); j++) {
+//                Cell cell = TempSheet.getCell(0, 0);
+//                //if(cell.getContents().equalsIgnoreCase(key)){
+//                for (int i = 0; i < TempSheet.getColumns(); i++) {
+//                    if(i != Integer.parseInt(PhoneNumberIndex)) {
+//                        Cell cel = TempSheet.getCell(i, 0);
+////                        resultSet.add(cel.getContents() + "");
+//
+//                    }
+//                }
+//                }
+                        int start = 0, end = 0;
+                        while (currentIndex < MessageBody.getText().toString().trim().length()) {
+                            start = SmsBody.indexOf('{') + 1 + currentIndex;
+                            end = SmsBody.indexOf('}') + currentIndex;
+                            int index = 0;
+                            String columnName = MessageBody.getText().toString().substring(start, end);
+                            for (int i = 0; i < TempSheet.getColumns(); i++) {
+                                if (columnName.equals(TempSheet.getCell(i, 0).getContents())) {
 //                            Cell cel = TempSheet.getCell(i, 0);
 //                        resultSet.add(cel.getContents() + "");
-                            index= i;
-                            break;
+                                    index = i;
+                                    break;
+                                }
+                            }
+                            for (int i = 0; i < SmsList.size(); i++) {
+                                SmsList.set(i, SmsList.get(i).substring(0, start - 1) + TempSheet.getCell(index, i + 1).getContents() + SmsList.get(i).substring(end + 1, SmsList.get(i).length()));
+                            }
+                            //output = SmsBody.indexOf('}');
+                            currentIndex += SmsBody.indexOf('}') + 1;
+                            SmsBody = SmsBody.substring(SmsBody.indexOf('}') + 1, SmsBody.length());
                         }
                     }
-                    for(int i = 0 ; i < SmsList.size();i++){
-                        SmsList.set(i,SmsList.get(i).substring(0,start-1)+TempSheet.getCell(index, i).getContents()+SmsList.get(i).substring(end+1,SmsList.get(i).length())) ;
-                    }
-                    //output = SmsBody.indexOf('}');
-                    currentIndex += SmsBody.indexOf('}')+1;
-                    SmsBody= SmsBody.substring(SmsBody.indexOf('}')+1,SmsBody.length());
+                }else{
+                    Toast.makeText(getApplicationContext(),"Sms body can't be empty",Toast.LENGTH_LONG).show();
                 }
             }
         });
