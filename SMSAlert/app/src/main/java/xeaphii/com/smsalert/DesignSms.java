@@ -51,9 +51,19 @@ public class DesignSms extends Activity {
         SendMessage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                int count = 0;
+                for (int i = 1; i < TempSheet.getRows(); i++) {
+
+                    Cell cell = TempSheet.getCell(0, i);
+                    String con=cell.getContents();
+                        if(con !=null && con.length()!=0){
+                            count++;
+                        }
+
+                }
 
                 String SmsBody = MessageBody.getText().toString().trim();
-                SmsList = new ArrayList<>(Collections.nCopies(TempSheet.getRows(), SmsBody));
+                SmsList = new ArrayList<>(Collections.nCopies(count, SmsBody));
 
                 int currentIndex =0 ;
 
@@ -83,8 +93,8 @@ public class DesignSms extends Activity {
                             break;
                         }
                     }
-                    for(int i = 1 ; i < SmsList.size();i++){
-                        SmsList.set(i,SmsList.get(i).substring(start-1)+TempSheet.getCell(index, i).getContents()+SmsList.get(i).substring(end+1)) ;
+                    for(int i = 0 ; i < SmsList.size();i++){
+                        SmsList.set(i,SmsList.get(i).substring(0,start-1)+TempSheet.getCell(index, i).getContents()+SmsList.get(i).substring(end+1,SmsList.get(i).length())) ;
                     }
                     //output = SmsBody.indexOf('}');
                     currentIndex += SmsBody.indexOf('}')+1;
