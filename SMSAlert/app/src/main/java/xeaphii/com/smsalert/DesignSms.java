@@ -1,6 +1,8 @@
 package xeaphii.com.smsalert;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -51,61 +53,7 @@ public class DesignSms extends Activity {
         SendMessage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (MessageBody.getText().toString().trim().length() > 0) {
-                    int count = -1;
-                    for (int i = 1; i < TempSheet.getRows(); i++) {
-
-                        Cell cell = TempSheet.getCell(0, i);
-                        String con = cell.getContents();
-                        if (con != null && con.length() != 0) {
-                            count++;
-                        }
-
-                    }
-                    if (count >= 0) {
-
-                        String SmsBody = MessageBody.getText().toString().trim();
-                        SmsList = new ArrayList<>(Collections.nCopies(count, SmsBody));
-
-                        int currentIndex = 0;
-
-
-//                 for (int j = 0; j < TempSheet.getRows(); j++) {
-//                Cell cell = TempSheet.getCell(0, 0);
-//                //if(cell.getContents().equalsIgnoreCase(key)){
-//                for (int i = 0; i < TempSheet.getColumns(); i++) {
-//                    if(i != Integer.parseInt(PhoneNumberIndex)) {
-//                        Cell cel = TempSheet.getCell(i, 0);
-////                        resultSet.add(cel.getContents() + "");
-//
-//                    }
-//                }
-//                }
-                        int start = 0, end = 0;
-                        while (currentIndex < MessageBody.getText().toString().trim().length()) {
-                            start = SmsBody.indexOf('{') + 1 + currentIndex;
-                            end = SmsBody.indexOf('}') + currentIndex;
-                            int index = 0;
-                            String columnName = MessageBody.getText().toString().substring(start, end);
-                            for (int i = 0; i < TempSheet.getColumns(); i++) {
-                                if (columnName.equals(TempSheet.getCell(i, 0).getContents())) {
-//                            Cell cel = TempSheet.getCell(i, 0);
-//                        resultSet.add(cel.getContents() + "");
-                                    index = i;
-                                    break;
-                                }
-                            }
-                            for (int i = 0; i < SmsList.size(); i++) {
-                                SmsList.set(i, SmsList.get(i).substring(0, start - 1) + TempSheet.getCell(index, i + 1).getContents() + SmsList.get(i).substring(end + 1, SmsList.get(i).length()));
-                            }
-                            //output = SmsBody.indexOf('}');
-                            currentIndex += SmsBody.indexOf('}') + 1;
-                            SmsBody = SmsBody.substring(SmsBody.indexOf('}') + 1, SmsBody.length());
-                        }
-                    }
-                }else{
-                    Toast.makeText(getApplicationContext(),"Sms body can't be empty",Toast.LENGTH_LONG).show();
-                }
+               new BackgroundTask(DesignSms.this).execute();
             }
         });
 
@@ -149,6 +97,96 @@ public class DesignSms extends Activity {
             if(resultSet.size()==0){
                 resultSet.add("Data not found..!");
             }
+        }
+
+    }
+    private class BackgroundTask extends AsyncTask<Void, Void, Void> {
+        private ProgressDialog dialog;
+
+        public BackgroundTask(Activity activity) {
+            dialog = new ProgressDialog(activity);
+        }
+
+        @Override
+        protected void onPreExecute() {
+            dialog.setMessage("Doing something, please wait.");
+            dialog.show();
+        }
+
+        @Override
+        protected void onPostExecute(Void result) {
+            if (dialog.isShowing()) {
+                dialog.dismiss();
+            }
+            for(int i = 0; i < SmsList.size();i++){
+                Toast.makeText(getApplicationContext(),SmsList.get(i),Toast.LENGTH_LONG).show();
+            }
+        }
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            if (MessageBody.getText().toString().trim().length() > 0) {
+                int count =0;
+                for (int i = 1; i < TempSheet.getRows(); i++) {
+
+                    Cell cell = TempSheet.getCell(0, i);
+                    String con = cell.getContents();
+                    if (con != null && con.length() != 0) {
+                        count++;
+                    }
+
+                }
+                if (count > 0) {
+
+                    String SmsBody = MessageBody.getText().toString().trim();
+                    SmsList = new ArrayList<>(Collections.nCopies(count, SmsBody));
+
+                    int currentIndex = 0;
+
+
+//                 for (int j = 0; j < TempSheet.getRows(); j++) {
+//                Cell cell = TempSheet.getCell(0, 0);
+//                //if(cell.getContents().equalsIgnoreCase(key)){
+//                for (int i = 0; i < TempSheet.getColumns(); i++) {
+//                    if(i != Integer.parseInt(PhoneNumberIndex)) {
+//                        Cell cel = TempSheet.getCell(i, 0);
+////                        resultSet.add(cel.getContents() + "");
+//
+//                    }
+//                }
+//                }
+                    int start = 0, end = 0,TempCounter = 0;
+                    while (currentIndex < MessageBody.getText().toString().trim().length()) {
+                        start = SmsBody.indexOf('{') + 1 + currentIndex;
+                        end = SmsBody.indexOf('}') + currentIndex;
+                        int index = -1;
+                        String columnName = MessageBody.getText().toString().substring(start, end);
+                        for (int i = 0; i < TempSheet.getColumns(); i++) {
+                            if (columnName.equals(TempSheet.getCell(i, 0).getContents())) {
+//                            Cell cel = TempSheet.getCell(i, 0);
+//                        resultSet.add(cel.getContents() + "");
+                                index = i;
+                                break;
+                            }
+                        }
+                        if(index>=0) {
+                            for (int i = 0; i < SmsList.size(); i++) {
+
+                                SmsList.set(i, SmsList.get(i).substring(0, SmsList.get(i).indexOf("{",TempCounter)) + TempSheet.getCell(index, i + 1).getContents() + SmsList.get(i).substring(SmsList.get(i).indexOf("}",TempCounter)  + 1, SmsList.get(i).length()));
+                            }
+                            //output = SmsBody.indexOf('}');
+                            currentIndex += SmsBody.indexOf('}') + 1;
+                            SmsBody = SmsBody.substring(SmsBody.indexOf('}') + 1, SmsBody.length());
+                        }
+                        TempCounter++;
+                    }
+
+                }
+            }else{
+                Toast.makeText(getApplicationContext(),"Sms body can't be empty",Toast.LENGTH_LONG).show();
+            }
+
+            return null;
         }
 
     }
