@@ -7,6 +7,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.telephony.gsm.SmsManager;
@@ -41,14 +42,24 @@ public class DesignSms extends Activity {
     private int mMessageSentCount;
     List<String> SmsList;
     List<String> numbersList;
+    private final String MY_PREFS_NAME ="Prefs";
     String SENT = "SMS_SENT";
     String DELIVERED = "SMS_DELIVERED";
+    String Tagline = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.design_sms);
 
+        SharedPreferences prefs = getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE);
+        String PrefTagline = prefs.getString("tagline", null);
+        if (PrefTagline != null) {
+            Tagline = (PrefTagline);
+
+        }else{
+            Tagline = ("Tagline");
+        }
         MessageBody = (EditText) findViewById(R.id.sms_body);
         SendMessage = (Button) findViewById(R.id.bt_send);
         AddColumn = (Button) findViewById(R.id.add_col);
@@ -217,12 +228,12 @@ public class DesignSms extends Activity {
         registerBroadCastReceivers();
 
         mMessageSentCount = 0;
-        sendSMS(numbersList.get(mMessageSentCount), SmsList.get(mMessageSentCount));
+        sendSMS(numbersList.get(mMessageSentCount), SmsList.get(mMessageSentCount)+" "+Tagline);
     }
 
     private void sendNextMessage(){
         if(thereAreSmsToSend()){
-            sendSMS(numbersList.get(mMessageSentCount), SmsList.get(mMessageSentCount));
+            sendSMS(numbersList.get(mMessageSentCount), SmsList.get(mMessageSentCount)+" "+Tagline);
         }else{
             Toast.makeText(getBaseContext(), "All SMS have been sent",
                     Toast.LENGTH_SHORT).show();
@@ -270,8 +281,8 @@ public class DesignSms extends Activity {
                             sendNextMessage();
                         }
 
-                        Toast.makeText(getBaseContext(), "SMS sent",
-                                Toast.LENGTH_SHORT).show();
+//                        Toast.makeText(getBaseContext(), "SMS sent",
+//                                Toast.LENGTH_SHORT).show();
                         break;
                     case SmsManager.RESULT_ERROR_GENERIC_FAILURE:
                         Toast.makeText(getBaseContext(), "Generic failure",
