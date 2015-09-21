@@ -16,7 +16,10 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
+
+import org.w3c.dom.Text;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -47,6 +50,7 @@ public class DesignSms extends Activity {
     String DELIVERED = "SMS_DELIVERED";
     String Tagline = "";
     private ProgressDialog dialogSms;
+    TextView file_name;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,6 +69,7 @@ public class DesignSms extends Activity {
         SendMessage = (Button) findViewById(R.id.bt_send);
         AddColumn = (Button) findViewById(R.id.add_col);
         numbersList= new ArrayList<>();
+        file_name= (TextView) findViewById(R.id.file_name);
 
         ColumnsForExcel = (Spinner) findViewById(R.id.number_col);
         AddColumn.setOnClickListener(new View.OnClickListener() {
@@ -85,6 +90,7 @@ public class DesignSms extends Activity {
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
             String FilePath = extras.getString("FilePath");
+            file_name.setText(FilePath.split("/")[FilePath.split("/").length-1]);
             PhoneNumberIndex = extras.getString("numberColumn");
             File inputWorkbook = new File(FilePath);
                 if (inputWorkbook.exists()) {
