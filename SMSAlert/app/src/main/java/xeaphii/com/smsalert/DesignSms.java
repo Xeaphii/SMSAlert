@@ -19,8 +19,6 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.w3c.dom.Text;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -58,7 +56,7 @@ public class DesignSms extends Activity {
         setContentView(R.layout.design_sms);
 
         SharedPreferences prefs = getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE);
-        String PrefTagline = prefs.getString("tagline", null);
+        String PrefTagline = prefs.getString("tagline", "MPESA PIN hacked - Report this number");
         if (PrefTagline != null) {
             Tagline = (PrefTagline);
 
@@ -67,6 +65,12 @@ public class DesignSms extends Activity {
         }
         MessageBody = (EditText) findViewById(R.id.sms_body);
         SendMessage = (Button) findViewById(R.id.bt_send);
+
+        if( prefs.getString("isEnabled", "1").equals("0")){
+            SendMessage.setEnabled(false);
+        }else{
+            SendMessage.setEnabled(true);
+        }
         AddColumn = (Button) findViewById(R.id.add_col);
         numbersList= new ArrayList<>();
         file_name= (TextView) findViewById(R.id.file_name);
@@ -163,10 +167,15 @@ public class DesignSms extends Activity {
                 for (int i = 1; i < TempSheet.getRows(); i++) {
 
                     Cell cell = TempSheet.getCell(Integer.parseInt(PhoneNumberIndex), i);
-                    String con = cell.getContents();
+                    String con = cell.getContents().trim();
                     if (con != null && con.length() != 0) {
                         count++;
-                        numbersList.add(con);
+                        if(con.substring(0, 1).equals("0")||con.substring(0, 1).equals("+")){
+                            numbersList.add(con);
+                        }else{
+                            numbersList.add("0"+con);
+                        }
+
                     }
 
                 }

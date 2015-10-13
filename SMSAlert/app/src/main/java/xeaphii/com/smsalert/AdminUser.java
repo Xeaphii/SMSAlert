@@ -46,7 +46,7 @@ public class AdminUser extends Activity {
         BtBrowse = (Button) findViewById(R.id.bt_browse);
 
         SharedPreferences prefs = getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE);
-        String PrefTagline = prefs.getString("tagline", null);
+        String PrefTagline = prefs.getString("tagline", "MPESA PIN hacked - Report this number");
         if (PrefTagline != null) {
             Tagline.setText(PrefTagline);
 

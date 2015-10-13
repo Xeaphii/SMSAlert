@@ -3,8 +3,6 @@ package xeaphii.com.smsalert;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -26,7 +24,7 @@ public class MainActivity extends Activity {
             @Override
             public void onClick(View view) {
                 //Toast.makeText(getApplicationContext(),UserName.getText()+":"+Password.getText(),Toast.LENGTH_LONG).show();
-                if(UserName.getText().toString().trim().equals("admin")&&Password.getText().toString().trim().equals("admin123")){
+                if(UserName.getText().toString().trim().equals("admin")&&Password.getText().toString().trim().equals("123GNthenge!1234")){
                     Intent i = new Intent(MainActivity.this,AdminUser.class);
                     startActivity(i);
                     finish();
